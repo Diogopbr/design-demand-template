@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Template Automatizado — Solicitação de Design e Vídeo (Discord)</title>
+  <style>
+    :root{--bg:#0f1115;--fg:#e6e9ef;--muted:#9aa4b2;--card:#151821;--accent:#ea8e1e;--ok:#22c55e;--danger:#ef4444;--border:#232736;--mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;} 
+    html,body{background:var(--bg);color:var(--fg);margin:0;font:14px/1.5 Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji","Segoe UI Emoji";}  
+    .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
+    .chip{display:inline-flex;align-items:center;gap:8px;background:#141926;border:1px solid #2a3245;border-radius:999px;padding:6px 10px;font-size:12px}
+    .title{display:flex;align-items:center;gap:10px;margin:6px 0 18px}
+    .head{display:flex;justify-content:space-between;align-items:center}
+    h1{font-size:20px;margin:0}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .onecol{grid-template-columns:1fr}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+    label{display:block;font-weight:600;margin-bottom:6px;color:#cdd6e3}
+    .req:after{content:" *";color:var(--accent);}
+    input,textarea,select{width:100%;box-sizing:border-box;border:1px solid var(--border);background:#0c0f15;color:#e6e9ef;border-radius:10px;padding:10px;font-size:13px}
+    textarea{min-height:70px;resize:vertical}
+    .mono{font-family:var(--mono);}
+    .row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+    button{background:var(--accent);border:0;color:#111;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
+    button.secondary{background:#222736;color:#d6d9e0;border:1px solid var(--border)}
+    button.good{background:var(--ok);color:#0b140d}
+    button.bad{background:var(--danger)}
+    .output{background:#0a0d12;border:1px dashed #2a3245;border-radius:14px;padding:14px;margin-top:16px}
+    pre{white-space:pre-wrap;word-wrap:break-word;margin:0;font-family:var(--mono);font-size:13px}
+    .hint{color:var(--muted);font-size:12px}
+    .footer{opacity:.8;margin-top:12px;font-size:12px;color:#a3adbd}
+    .tabs{display:flex;gap:8px;margin:8px 0}
+    .tab{flex:0 0 auto;padding:8px 12px;border:1px solid var(--border);border-radius:999px;background:#141926;cursor:pointer}
+    .tab.active{border-color:var(--accent);box-shadow:0 0 0 1px rgba(234,142,30,.25) inset}
+    .hidden{display:none}
+    .error{border-color:var(--danger)!important;}
+    .toast{position:fixed;right:16px;bottom:16px;background:#141926;border:1px solid #2a3245;border-left:4px solid var(--accent);padding:12px 14px;border-radius:12px;color:#dbe1ec;box-shadow:0 8px 30px rgba(0,0,0,.35);opacity:0;transform:translateY(8px);transition:all .25s ease}
+    .toast.show{opacity:1;transform:translateY(0)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">
+      <span class="chip">🎛️ Toggle Design/Vídeo</span>
+      <span class="chip">🧲 Opções pré-definidas</span>
+      <span class="chip">✅ Validação</span>
+    </div>
+
+    <div class="head">
+      <h1>Template Automatizado — Solicitação de Design e Vídeo (Discord)</h1>
+      <div class="btns">
+        <button class="secondary" id="fillExample" title="Preencher com um exemplo">Preencher exemplo</button>
+        <button class="secondary" id="clearAll" title="Limpar todos os campos">Limpar</button>
+        <button class="secondary" id="runTests" title="Executar testes automatizados">Rodar Testes</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <label for="titulo" class="req">1) Título da Demanda</label>
+        <input id="titulo" placeholder="Ex.: Banner para tela de login do servidor" />
+      </div>
+      <div class="card">
+        <label for="objetivo" class="req">2) Objetivo</label>
+        <textarea id="objetivo" placeholder="O que o design/vídeo deve transmitir?"></textarea>
+      </div>
+
+      <div class="card">
+        <label for="onde" class="req">Onde será usado</label>
+        <input id="onde" placeholder="Ex.: Página inicial, redes sociais, HUD no jogo, trailer no Discord" />
+      </div>
+      <div class="card">
+        <label for="publico" class="req">Público-alvo</label>
+        <input id="publico" placeholder="Ex.: Jogadores, administradores, visitantes, investidores" />
+      </div>
+
+      <div class="card">
+        <label>3) Selecione o tipo</label>
+        <div class="tabs">
+          <button type="button" class="tab active" data-tab="design">🎨 Design</button>
+          <button type="button" class="tab" data-tab="video">🎬 Vídeo</button>
+          <button type="button" class="tab" data-tab="ambos">🧩 Ambos</button>
+        </div>
+        <div class="hint">Escolha para mostrar apenas os campos relevantes.</div>
+      </div>
+
+      <!-- DESIGN SPECS -->
+      <div class="card spec spec-design">
+        <label>3) Especificações — Design</label>
+        <div class="row">
+          <select id="dimPreset">
+            <option value="">Tamanho (preset)</option>
+            <option>1920x1080px</option>
+            <option>1080x1080px</option>
+            <option>1080x1920px</option>
+            <option>1280x720px</option>
+            <option>291x67px</option>
+          </select>
+          <select id="formatoPreset">
+            <option value="">Formato</option>
+            <option>PNG</option>
+            <option>JPG</option>
+            <option>SVG</option>
+          </select>
+          <select id="dpiPreset">
+            <option value="">Resolução</option>
+            <option>72 DPI</option>
+            <option>300 DPI</option>
+          </select>
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <input id="peso" placeholder="Peso máx. — ex.: < 2MB" />
+          <input id="dim" placeholder="Tamanho custom (px)" />
+          <span></span>
+        </div>
+      </div>
+
+      <!-- VIDEO SPECS -->
+      <div class="card spec spec-video hidden">
+        <label>3) Especificações — Vídeo</label>
+        <div class="row">
+          <select id="vres">
+            <option value="">Resolução</option>
+            <option>1920x1080</option>
+            <option>1080x1920</option>
+            <option>2560x1440</option>
+            <option>3840x2160 (4K)</option>
+          </select>
+          <select id="vformato">
+            <option value="">Formato</option>
+            <option>MP4</option>
+            <option>MOV</option>
+            <option>WEBM</option>
+          </select>
+          <select id="vorient">
+            <option value="">Orientação</option>
+            <option>Horizontal</option>
+            <option>Vertical</option>
+            <option>Quadrado</option>
+          </select>
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <select id="vdur">
+            <option value="">Duração</option>
+            <option>15s</option>
+            <option>30s</option>
+            <option>45s</option>
+            <option>1min</option>
+            <option>2min</option>
+          </select>
+          <select id="vfreq">
+            <option value="">Frequência</option>
+            <option>Vídeo único</option>
+            <option>Vinheta semanal</option>
+            <option>Série de episódios</option>
+          </select>
+          <span></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <label for="paleta">4) Paleta & Identidade Visual</label>
+        <textarea id="paleta" placeholder="Cores (hex), fontes, estilo... Ex.: #000000, #FFFFFF, #EA8E1E | Montserrat | clean + neon sutil"></textarea>
+        <div class="hint">Dica: se já tiver guia de marca, cole os pontos essenciais aqui.</div>
+      </div>
+      <div class="card">
+        <label for="refs">5) Referências (descrição)</label>
+        <textarea id="refs" placeholder="Ex.: Minimalista como menus do GTA V; cortes rápidos como trailers da Rockstar"></textarea>
+        <label for="links" style="margin-top:10px">Links (1 por linha)</label>
+        <textarea id="links" class="mono" placeholder="https://...
+https://..."></textarea>
+      </div>
+
+      <div class="card">
+        <label for="textoDesign">6) Texto — Design</label>
+        <textarea id="textoDesign" placeholder="Frase exata para a arte"></textarea>
+      </div>
+      <div class="card">
+        <label for="textoVideo">6) Roteiro — Vídeo</label>
+        <textarea id="textoVideo" placeholder="Descrição do roteiro ou texto base"></textarea>
+      </div>
+
+      <div class="card">
+        <label class="req">7) Prazos</label>
+        <div class="row">
+          <input id="prazo1" type="date" />
+          <input id="prazo2" type="date" />
+          <span></span>
+        </div>
+      </div>
+      <div class="card">
+        <label class="req">8) Contato para Dúvidas</label>
+        <div class="row">
+          <input id="resp" placeholder="Responsável — Ex.: Diogo" />
+          <input id="discord" placeholder="Discord — Ex.: @Diogopbr" />
+          <span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="btns">
+      <button id="generate" class="good">Gerar Markdown</button>
+      <button id="copy" class="secondary">Copiar</button>
+    </div>
+
+    <div class="output card">
+      <label>Saída (Markdown para colar no Discord)</label>
+      <pre id="out" class="mono">Preencha os campos e clique em “Gerar Markdown”.</pre>
+    </div>
+
+    <div class="output card" id="testsBox">
+      <label>Resultados dos Testes</label>
+      <pre id="testout" class="mono">Clique em "Rodar Testes" para validar.</pre>
+    </div>
+
+    <div class="footer">Feito para agilizar as demandas do servidor. Paleta: preto/branco + destaque <b>#EA8E1E</b>. ✨</div>
+  </div>
+
+  <div class="toast" id="toast">Preencha os campos obrigatórios marcados com *</div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+
+    const nl = s => (s||'').toString().trim();
+    // ✅ Fix: regex de quebra de linha corrigido
+    const lines = s => nl(s).split(/\n/).filter(Boolean);
+
+    // Tab logic (Design / Vídeo / Ambos)
+    const tabs = document.querySelectorAll('.tab');
+    const specDesign = document.querySelector('.spec-design');
+    const specVideo = document.querySelector('.spec-video');
+    let activeTab = 'design';
+
+    tabs.forEach(t => t.addEventListener('click', () => {
+      tabs.forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      activeTab = t.dataset.tab;
+      specDesign.classList.toggle('hidden', activeTab==='video');
+      specVideo.classList.toggle('hidden', activeTab==='design');
+    }));
+
+    function showToast(msg){
+      const toast = $("toast");
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(()=> toast.classList.remove('show'), 2200);
+    }
+
+    function mark(el, cond){
+      if(!el) return false;
+      if(cond){ el.classList.add('error'); return true; }
+      el.classList.remove('error');
+      return false;
+    }
+
+    function validate(){
+      const errs = [];
+      const v = (id)=> nl($(id)?.value);
+
+      errs.push(mark($("titulo"), !v('titulo')));
+      errs.push(mark($("objetivo"), !v('objetivo')));
+      errs.push(mark($("onde"), !v('onde')));
+      errs.push(mark($("publico"), !v('publico')));
+
+      // Prazos e contato
+      errs.push(mark($("prazo1"), !v('prazo1')));
+      errs.push(mark($("prazo2"), !v('prazo2')));
+      errs.push(mark($("resp"), !v('resp')));
+      errs.push(mark($("discord"), !v('discord')));
+
+      // Regras por tipo
+      if(activeTab === 'design' || activeTab === 'ambos'){
+        const hasDesign = nl($("dimPreset").value) || nl($("dim").value) || nl($("formatoPreset").value) || nl($("dpiPreset").value);
+        if(!hasDesign){
+          ["dimPreset","formatoPreset","dpiPreset","dim"].forEach(id=> mark($(id), true));
+        } else {
+          ["dimPreset","formatoPreset","dpiPreset","dim"].forEach(id=> mark($(id), false));
+        }
+        errs.push(!hasDesign);
+      }
+      if(activeTab === 'video' || activeTab === 'ambos'){
+        const hasVideo = nl($("vres").value) || nl($("vformato").value) || nl($("vorient").value) || nl($("vdur").value);
+        if(!hasVideo){
+          ["vres","vformato","vorient","vdur"].forEach(id=> mark($(id), true));
+        } else {
+          ["vres","vformato","vorient","vdur"].forEach(id=> mark($(id), false));
+        }
+        errs.push(!hasVideo);
+      }
+
+      const anyErr = errs.some(Boolean);
+      if(anyErr) showToast('Preencha os campos obrigatórios marcados com * ou selecione presets.');
+      return !anyErr;
+    }
+
+    function md() {
+      const titulo = nl($("titulo").value) || "[Digite aqui o título objetivo e descritivo]";
+      const objetivo = nl($("objetivo").value) || "[Descreva o que o design/vídeo deve transmitir]";
+      const onde = nl($("onde").value) || "[Ex.: página inicial, redes sociais, HUD no jogo, trailer no Discord, etc.]";
+      const publico = nl($("publico").value) || "[Jogadores, administradores, visitantes, investidores, etc.]";
+
+      // Design
+      const dim = nl($("dim").value) || nl($("dimPreset").value) || "[ex.: 1920x1080px]";
+      const formato = nl($("formatoPreset").value) || "[PNG, JPG, SVG...]";
+      const dpi = nl($("dpiPreset").value) || "[72 DPI digital / 300 DPI impressão]";
+      const peso = nl($("peso").value) || "[ex.: < 2MB]";
+
+      // Vídeo
+      const vres = nl($("vres").value) || "[ex.: 1920x1080, 4K]";
+      const vformato = nl($("vformato").value) || "[MP4, MOV...]";
+      const vdur = nl($("vdur").value) || "[ex.: até 30s, 1min]";
+      const vorient = nl($("vorient").value) || "[Horizontal, Vertical, Quadrado]";
+      const vfreq = nl($("vfreq").value) || "[Vídeo único, vinheta semanal...]";
+
+      const paleta = nl($("paleta").value) || "[Códigos hex, fontes, estilo]";
+      const refs = nl($("refs").value);
+      const linkList = lines($("links").value);
+
+      const textoDesign = nl($("textoDesign").value) || "[Frase para o banner]";
+      const textoVideo = nl($("textoVideo").value) || "[Descrição do roteiro ou texto base]";
+
+      const prazo1 = $("prazo1").value ? new Date($("prazo1").value).toLocaleDateString('pt-BR') : "[DATA]";
+      const prazo2 = $("prazo2").value ? new Date($("prazo2").value).toLocaleDateString('pt-BR') : "[DATA]";
+
+      const resp = nl($("resp").value) || "[Nome]";
+      const discord = nl($("discord").value) || "[@UsuárioDiscord]";
+
+      const linksMd = (linkList.length
+        ? linkList.map(l => `  - [link](${l})`).join("
+")
+        : "  - [link 1]()
+  - [link 2]()");
+
+      const blockDesign = (activeTab !== 'video') ? (
+`🎨 **Para Design:**
+- **Tamanho:** \`${dim}\`
+- **Formato do arquivo:** \`${formato}\`
+- **Resolução mínima:** \`${dpi}\`
+- **Peso máximo:** \`${peso}\`
+
+`) : '';
+      const blockVideo = (activeTab !== 'design') ? (
+`🎬 **Para Vídeo:**
+- **Resolução:** \`${vres}\`
+- **Formato:** \`${vformato}\`
+- **Duração:** \`${vdur}\`
+- **Orientação:** \`${vorient}\`
+- **Frequência:** \`${vfreq}\`
+
+`) : '';
+
+      return `**🎨 Padrão para Solicitação de Demandas de Design e Video Maker**
+
+` +
+`**1. Título da Demanda**
+> ${titulo}
+
+---
+
+` +
+`**2. Descrição do Projeto**
+- **Objetivo:** ${objetivo}
+- **Onde será usado:** ${onde}
+- **Público-alvo:** ${publico}
+
+---
+
+` +
+`**3. Especificações Técnicas**
+` + blockDesign + blockVideo +
+`---
+
+` +
+`**4. Paleta de Cores e Identidade Visual**
+- **Guia:** ${paleta}
+
+---
+
+` +
+`**5. Referências Visuais ou Audiovisuais**
+- ${refs || "[Descreva ou adicione links]"}
+- Links:
+${linksMd}
+
+---
+
+` +
+`**6. Texto ou Roteiro**
+` + ((activeTab !== 'video') ? `🖼 **Para Design:**
+> "${textoDesign}"
+
+` : '') + ((activeTab !== 'design') ? `🎬 **Para Vídeo:**
+> "${textoVideo}"
+
+` : '') +
+`---
+
+` +
+`**7. Prazos**
+- **Primeira versão:** ${prazo1}
+- **Versão final:** ${prazo2}
+
+---
+
+` +
+`**8. Contato para Dúvidas**
+- **Responsável:** ${resp}
+- **Discord:** \`${discord}\``;
+    }
+
+    function generate() { 
+      if(!validate()) return; 
+      $("out").textContent = md(); 
+      showToast('Markdown gerado! ✅');
+    }
+
+    function copyOut(){
+      const text = $("out").textContent; 
+      navigator.clipboard.writeText(text).then(()=>{
+        const btn = $("copy");
+        const old = btn.textContent;
+        btn.textContent = "Copiado!";
+        btn.classList.add('good');
+        setTimeout(()=>{btn.textContent = old; btn.classList.remove('good');}, 1400);
+      }).catch(()=> alert('Não foi possível copiar. Selecione e copie manualmente.'));
+    }
+
+    function clearAll(){
+      document.querySelectorAll('input, textarea, select').forEach(el=> {el.value=''; el.classList.remove('error')});
+      $("out").textContent = 'Preencha os campos e clique em “Gerar Markdown”.';
+    }
+
+    function fillExample(){
+      $("titulo").value = "Banner de Boas-Vindas para Tela de Login do Servidor";
+      $("objetivo").value = "Criar um banner visualmente impactante que transmita imersão e ação no servidor.";
+      $("onde").value = "Tela de login do servidor Portland RP (FiveM)";
+      $("publico").value = "Jogadores (novos e veteranos)";
+
+      $("dimPreset").value = "1920x1080px";
+      $("formatoPreset").value = "PNG";
+      $("dpiPreset").value = "72 DPI";
+      $("peso").value = "< 2MB";
+
+      $("vres").value = "1920x1080";
+      $("vformato").value = "MP4";
+      $("vdur").value = "30s";
+      $("vorient").value = "Horizontal";
+      $("vfreq").value = "Vídeo único";
+
+      $("paleta").value = "Preto #000000, Branco #FFFFFF, Laranja vibrante #EA8E1E | Fonte: Montserrat | Estilo: clean com neon sutil";
+      $("refs").value = "Minimalista como menus de GTA V; estética cinematográfica de Cyberpunk 2077";
+      $("links").value = "https://exemplo.com/hud
+https://exemplo.com/banner";
+
+      $("textoDesign").value = "Bem-vindo ao Portland RP – Sua história começa aqui.";
+      $("textoVideo").value = "Vídeo institucional apresentando diferenciais do servidor, com cenas in-game e depoimentos.";
+
+      const todayPlus3 = new Date(); todayPlus3.setDate(todayPlus3.getDate()+3);
+      const todayPlus6 = new Date(); todayPlus6.setDate(todayPlus6.getDate()+6);
+      $("prazo1").value = todayPlus3.toISOString().slice(0,10);
+      $("prazo2").value = todayPlus6.toISOString().slice(0,10);
+
+      $("resp").value = "Diogo";
+      $("discord").value = "@Diogopbr";
+
+      // Deixe a aba em "Ambos" para exibir os dois blocos no exemplo
+      document.querySelector('[data-tab="ambos"]').click();
+
+      generate();
+    }
+
+    // --- Testes automatizados ---
+    function runTests(){
+      const results = [];
+      const assert = (name, cond) => { results.push(`${cond? '✅' : '❌'} ${name}`); return cond; };
+
+      // Teste 1: lines() quebra linhas corretamente
+      const L1 = lines("a
+b
+
+c
+");
+      assert('lines remove vazios e quebra por \n', L1.length === 3 && L1[0]==='a' && L1[2]==='c');
+
+      // Teste 2: linksMd gera placeholder quando vazio
+      const before = $("links").value;
+      $("links").value = "";
+      $("titulo").value = "T"; $("objetivo").value = "O"; $("onde").value = "W"; $("publico").value = "P"; $("prazo1").value = "2025-08-15"; $("prazo2").value = "2025-08-20"; $("resp").value = "R"; $("discord").value = "@x";
+      document.querySelector('[data-tab="design"]').click();
+      $("dimPreset").value = "1920x1080px"; $("formatoPreset").value = "PNG"; $("dpiPreset").value = "72 DPI";
+      const mdDesign = md();
+      assert('MD contém bloco de Design', mdDesign.includes('🎨 **Para Design:**'));
+      assert('MD NÃO contém bloco de Vídeo', !mdDesign.includes('🎬 **Para Vídeo:**'));
+      assert('MD placeholder de links aparece', mdDesign.includes('[link 1]()'));
+
+      // Teste 3: somente Vídeo
+      document.querySelector('[data-tab="video"]').click();
+      $("vres").value = "1920x1080"; $("vformato").value = "MP4"; $("vorient").value = "Horizontal"; $("vdur").value = "30s";
+      const mdVideo = md();
+      assert('MD contém bloco de Vídeo', mdVideo.includes('🎬 **Para Vídeo:**'));
+      assert('MD NÃO contém bloco de Design', !mdVideo.includes('🎨 **Para Design:**'));
+
+      // Teste 4: Ambos
+      document.querySelector('[data-tab="ambos"]').click();
+      const mdBoth = md();
+      assert('MD contém Design e Vídeo quando Ambos', mdBoth.includes('🎨 **Para Design:**') && mdBoth.includes('🎬 **Para Vídeo:**'));
+
+      // Restaurar
+      $("links").value = before;
+
+      $("testout").textContent = results.join('
+');
+      showToast('Testes executados');
+    }
+
+    $("generate").addEventListener('click', generate);
+    $("copy").addEventListener('click', copyOut);
+    $("clearAll").addEventListener('click', clearAll);
+    $("fillExample").addEventListener('click', fillExample);
+    $("runTests").addEventListener('click', runTests);
+  </script>
+</body>
+</html>
